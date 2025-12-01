@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Slot Mini (Non-judi)</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#111; color:#fff; text-align:center; }
+    h1 { color:#f39c12; }
+    .machine { display:flex; justify-content:center; gap:18px; margin:20px auto; }
+    .reel {
+      width:90px; height:90px; font-size:48px; display:flex; align-items:center; justify-content:center;
+      background:#222; border:2px solid #f39c12; border-radius:12px;
+    }
+    .panel { margin-top:12px; }
+    button {
+      padding:10px 18px; background:#27ae60; color:#fff; border:none; border-radius:6px; cursor:pointer;
+    }
+    button:hover { background:#2ecc71; }
+    .msg { margin-top:10px; min-height:24px; }
+  </style>
+</head>
+<body>
+  <h1>Slot Mini (Non-judi)</h1>
+  <div class="machine">
+    <div class="reel" id="r1">🍒</div>
+    <div class="reel" id="r2">🍋</div>
+    <div class="reel" id="r3">🔔</div>
+  </div>
+  <div class="panel">
+    <div>Skor: <span id="score">0</span></div>
+    <button id="spinBtn">Spin</button>
+  </div>
+  <div class="msg" id="msg"></div>
+
+  <script>
+    const symbols = ["🍒","🍋","🍇","🔔","⭐","🍉"];
+    const reels = [document.getElementById("r1"), document.getElementById("r2"), document.getElementById("r3")];
+    const scoreEl = document.getElementById("score");
+    const msgEl = document.getElementById("msg");
+    const spinBtn = document.getElementById("spinBtn");
+    let score = 0, spinning = false;
+
+    function randSymbol() {
+      return symbols[Math.floor(Math.random() * symbols.length)];
+    }
+
+    function animateReel(reel, duration = 600) {
+      return new Promise(resolve => {
+        const start = performance.now();
+        function tick(now) {
+          const t = now - start;
+          reel.textContent = randSymbol();
+          if (t < duration) requestAnimationFrame(tick);
+          else resolve();
+        }
+        requestAnimationFrame(tick);
+      });
+    }
+
+    async function spin() {
+  if (spinning) return;
+  spinning = true;
+  msgEl.textContent = "";
+  spinBtn.disabled = true;
+
+  // Tentukan hasil final dulu
+  const final = reels.map(() => randSymbol());
+
+  // Animasi tiap reel
+  await animateReel(reels[0], 700);
+  reels[0].textContent = final[0];
+
+  await animateReel(reels[1], 900);
+  reels[1].textContent = final[1];
+
+  await animateReel(reels[2], 1100);
+  reels[2].textContent = final[2];
+
+  // Cek skor
+  const [a,b,c] = final;
+  if (a === b && b === c) {
+    score += 50;
+    msgEl.textContent = "Jackpot! +50 poin";
+  } else if (a === b || b === c || a === c) {
+    score += 15;
+    msgEl.textContent = "Dapat dua simbol cocok! +15 poin";
+  } else {
+    score += 2;
+    msgEl.textContent = "Lumayan, +2 poin";
+  }
+  scoreEl.textContent = score.toString();
+
+  spinBtn.disabled = false;
+  spinning = false;
+}
+
+    spinBtn.addEventListener("click", spin);
+  </script>
+</body>
+</html>
